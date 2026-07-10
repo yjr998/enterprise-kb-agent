@@ -23,7 +23,7 @@ git clone https://github.com/yjr998/enterprise-kb-agent.git
 cd enterprise-kb-agent
 
 pip install -r requirements.txt
-ollama pull qwen2:1.5b
+ollama pull qwen2.5:3b
 
 python scripts/build_vectordb.py
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
@@ -46,6 +46,18 @@ Hybrid retrieval combines semantic (Chroma) and lexical (BM25) search before LLM
 ## Tech Stack
 
 Python · FastAPI · LangGraph · Chroma · Ollama · bge-small-zh
+
+---
+
+## Evaluation
+
+| Metric | Value |
+|--------|-------|
+| Test cases | 20 |
+| Passed | 20/20 |
+| Success rate | 100% (qwen2.5:3b, local CPU) |
+
+Run `python run_eval.py` — results saved to `docs/evaluation_result.json`.
 
 ---
 

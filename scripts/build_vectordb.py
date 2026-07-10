@@ -8,13 +8,10 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 import app.env_setup  # noqa: F401
 
-from langchain_community.document_loaders import TextLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
 
-KNOWLEDGE_FILE = PROJECT_ROOT / "data" / "knowledge.txt"
-CHROMA_DIR = PROJECT_ROOT / "chroma_db"
+from app.rag_engine import KNOWLEDGE_FILE, CHROMA_DIR, chunk_documents
 
 
 def main():
@@ -23,15 +20,10 @@ def main():
         sys.exit(1)
 
     print("1/4 加载文档...")
-    documents = TextLoader(str(KNOWLEDGE_FILE), encoding="utf-8").load()
+    text = KNOWLEDGE_FILE.read_text(encoding="utf-8")
 
     print("2/4 切分文档...")
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=500,
-        chunk_overlap=50,
-        separators=["\n\n", "\n", "。", "！", "？", " ", ""],
-    )
-    chunks = splitter.split_documents(documents)
+    chunks = chunk_documents(text, str(KNOWLEDGE_FILE))
     print(f"    共 {len(chunks)} 个片段")
 
     print("3/4 加载 embedding 模型（首次约 33MB）...")

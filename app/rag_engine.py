@@ -6,8 +6,6 @@ from collections import defaultdict
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.retrievers import BM25Retriever
-from langchain_community.document_loaders import TextLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -17,6 +15,24 @@ CHROMA_DIR = PROJECT_ROOT / "chroma_db"
 _embeddings = None
 _vector_retriever = None
 _bm25_retriever = None
+
+
+def chunk_documents(
+    text: str,
+    source: str,
+    chunk_size: int = 500,
+    overlap: int = 50,
+) -> list[Document]:
+    """按固定长度切分文本，避免依赖 langchain_text_splitters（部分环境 SSL 导入失败）。"""
+    chunks: list[Document] = []
+    start = 0
+    while start < len(text):
+        end = min(start + chunk_size, len(text))
+        chunks.append(Document(page_content=text[start:end], metadata={"source": source}))
+        if end >= len(text):
+            break
+        start = max(end - overlap, start + 1)
+    return chunks
 
 
 def _get_embeddings():
@@ -52,10 +68,8 @@ def _get_retrievers():
         if not KNOWLEDGE_FILE.exists():
             raise FileNotFoundError(f"知识库文件不存在：{KNOWLEDGE_FILE}")
 
-        loader = TextLoader(str(KNOWLEDGE_FILE), encoding="utf-8")
-        documents = loader.load()
-        splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
-        chunks = splitter.split_documents(documents)
+        text = KNOWLEDGE_FILE.read_text(encoding="utf-8")
+        chunks = chunk_documents(text, str(KNOWLEDGE_FILE))
         _bm25_retriever = BM25Retriever.from_documents(chunks)
         _bm25_retriever.k = 10
     return _vector_retriever, _bm25_retriever

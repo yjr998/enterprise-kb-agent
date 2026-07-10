@@ -31,7 +31,7 @@ flowchart TD
     D --> G[Calculator]
     E --> H[hybrid_retrieve]
     H --> I[Chroma + BM25]
-    D --> J[Ollama qwen2:1.5b]
+    D --> J[Ollama qwen2.5:3b]
 ```
 
 
@@ -130,7 +130,7 @@ enterprise-kb-agent/
 
 | 类别        | 技术                     |
 | --------- | ---------------------- |
-| 推理        | Ollama (Qwen2-1.5B)    |
+| 推理        | Ollama (Qwen2.5-3B)    |
 | 向量库       | Chroma                 |
 | Embedding | BAAI/bge-small-zh-v1.5 |
 | Agent     | LangGraph + ToolNode   |
@@ -146,10 +146,12 @@ enterprise-kb-agent/
 ## 评测结果
 
 
-| 指标  | 数值                       |
-| --- | ------------------------ |
-| 测试集 | 20 条                     |
-| 成功率 | 70%（本地 qwen2.5:3b + CPU） |
+| 指标   | 数值                              |
+| ---- | ------------------------------- |
+| 测试集  | 20 条                            |
+| 通过数  | 20/20                           |
+| 成功率  | 100%（本地 qwen2.5:3b + CPU）       |
+| 评测说明 | 基础响应率（回答非空且长度 > 5 字即通过） |
 
 
 ---

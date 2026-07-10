@@ -135,18 +135,20 @@ def _try_quick_answer(user_input: str) -> str | None:
     text = user_input.strip()
 
     order_match = re.search(r"\d{5}", text)
-    if order_match and any(k in text for k in ("订单", "退货", "物流", "签收", "买了")):
+    if order_match and any(
+        k in text for k in ("订单", "退货", "物流", "签收", "买了", "到哪", "查询", "状态")
+    ):
         return lookup_order.invoke({"order_id": order_match.group(0)})
 
     math_match = re.search(
-        r"(\d+(?:\.\d+)?)\s*([+\-*/×x除以加减乘])\s*(\d+(?:\.\d+)?)", text
+        r"(\d+(?:\.\d+)?)\s*(减去|加上|乘以|除以|[+\-*/×x加减乘])\s*(\d+(?:\.\d+)?)", text
     )
     if math_match:
         a, op, b = float(math_match.group(1)), math_match.group(2), float(math_match.group(3))
         ops = {
-            "+": add, "加": add,
-            "-": subtract, "减": subtract,
-            "*": multiply, "x": multiply, "×": multiply, "乘": multiply,
+            "+": add, "加": add, "加上": add,
+            "-": subtract, "减": subtract, "减去": subtract,
+            "*": multiply, "x": multiply, "×": multiply, "乘": multiply, "乘以": multiply,
             "/": divide, "除以": divide,
         }
         fn = ops.get(op)
@@ -154,8 +156,17 @@ def _try_quick_answer(user_input: str) -> str | None:
             result = fn.invoke({"a": a, "b": b})
             if result != result:  # NaN
                 return "错误：除数不能为 0。"
-            op_display = {"+": "+", "加": "+", "-": "-", "减": "-", "*": "×", "x": "×", "×": "×", "乘": "×", "/": "÷", "除以": "÷"}.get(op, op)
-            return f"{int(a) if a == int(a) else a} {op_display} {int(b) if b == int(b) else b} = {int(result) if result == int(result) else result}。"
+            op_display = {
+                "+": "+", "加": "+", "加上": "+",
+                "-": "-", "减": "-", "减去": "-",
+                "*": "×", "x": "×", "×": "×", "乘": "×", "乘以": "×",
+                "/": "÷", "除以": "÷",
+            }.get(op, op)
+            return (
+                f"{int(a) if a == int(a) else a} {op_display} "
+                f"{int(b) if b == int(b) else b} = "
+                f"{int(result) if result == int(result) else result}。"
+            )
 
     return None
 
@@ -172,4 +183,10 @@ def chat(session_messages: list, user_input: str) -> tuple[list, str]:
     session_messages.append(HumanMessage(content=user_input))
     result = agent_app.invoke({"messages": session_messages}, config={"recursion_limit": 12})
     updated = result["messages"]
-    return updated, _extract_answer(updated)
+    answer = _extract_answer(updated)
+    if not answer:
+        fallback = _try_quick_answer(user_input)
+        if fallback:
+            updated.append(AIMessage(content=fallback))
+            return updated, fallback
+    return updated, answer
