@@ -1,0 +1,33 @@
+# 密钥 — 绝不上传
+.env
+.env.*
+*.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# 向量库（clone 后运行 scripts/build_vectordb.py 生成）
+chroma_db/
+
+# 日志与缓存
+*.log
+.cache/
+.huggingface/
+
+# IDE
+.vscode/
+.idea/
+
+# 评测输出（可选保留 evaluation_result.json 展示数据）
+docs/evaluation_result.json
+
+# 录屏体积大，建议用 GitHub Release 或图床
+docs/demo.mp4
+
+# OS
+.DS_Store
+Thumbs.db
