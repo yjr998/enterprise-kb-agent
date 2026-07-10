@@ -19,7 +19,7 @@ An on-premise enterprise Q&A agent powered by **RAG + LangGraph**, with hybrid r
 ## Quick Start
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/enterprise-kb-agent.git
+git clone https://github.com/yjr998/enterprise-kb-agent.git
 cd enterprise-kb-agent
 
 pip install -r requirements.txt
